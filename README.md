@@ -6,3 +6,4 @@
 1. ~~정적인 홈페이지를 호스팅~~   
 2. querydata를 불러와 id로 홈페이지 구현   
 3. readFile을 사용해 하나의 template로 2번을 구현   
+4. readDir를 사용해 data폴더에 들어있는 파일들로 list를 구현   
