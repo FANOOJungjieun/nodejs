@@ -2,6 +2,37 @@ var http = require('http');
 var fs = require('fs');
 //var url = require('url');
 
+function templateHTML(title,list,data) {
+  return `
+      <!doctype html>
+    <html>
+    <head>
+    <title>WEB1 - ${title}</title>
+    <meta charset="utf-8">
+    </head>
+    <body>
+    <h1><a href="/">WEB</a></h1>
+    ${list}
+    <h2>${title}</h2>
+    <p>${data}
+    </p>
+    </body>
+    </html>
+      `;
+}
+
+function templateList(filelist) {
+  var list = '<ul>';
+  var i = 0;
+  while(i < filelist.length) {
+    list = list + `<li><a href="/?id=${filelist[i]}">${filelist[i]}</a></li>`;
+    i = i+1;
+  }
+  var list = list + '</ul>';
+
+  return list;
+}
+
 var app = http.createServer(function(request,response){
     var _url = request.url;
     const myURL = new URL('http://localhost:3000'+_url);
@@ -17,68 +48,24 @@ var app = http.createServer(function(request,response){
       if(queryData === undefined) {
 
         fs.readdir('./data', function(err, filelist) {
-          console.log(filelist);
           var title = 'Welcome';
           var data = 'Hello, NodeJS';
-
-          var list = '<ul>';
-          var i = 0;
-          while(i < filelist.length) {
-              list = list + `<li><a href="/?id=${filelist[i]}">${filelist[i]}</a></li>`;
-              i = i+1;
-          }
-          var list = list + '</ul>';
-
-          var template = `
-                  <!doctype html>
-              <html>
-              <head>
-                <title>WEB1 - ${title}</title>
-                <meta charset="utf-8">
-              </head>
-              <body>
-                <h1><a href="/">WEB</a></h1>
-                ${list}
-                <h2>${title}</h2>
-                <p>${data}
-                </p>
-              </body>
-              </html>
-                  `;
-        response.writeHead(200);
-        response.end(template); 
+          var list = templateList(filelist);
+          var template = templateHTML(title,list,data);
+          response.writeHead(200);
+          response.end(template); 
         })
           
       } else {
         fs.readdir('./data', function(err, filelist) {
-          var list = '<ul>';
-          var i = 0;
-          while(i < filelist.length) {
-              list = list + `<li><a href="/?id=${filelist[i]}">${filelist[i]}</a></li>`;
-              i = i+1;
-          }
-          var list = list + '</ul>';
+          var list = templateList(filelist);
 
           fs.readFile(`data/${queryData}`, 'utf8', function(err,data){
             var title = queryData;
-            var template = `
-                    <!doctype html>
-                <html>
-                <head>
-                  <title>WEB1 - ${title}</title>
-                  <meta charset="utf-8">
-                </head>
-                <body>
-                  <h1><a href="/">WEB</a></h1>
-                  ${list}
-                  <h2>${title}</h2>
-                  <p>${data}
-                  </p>
-                </body>
-                </html>
-                    `;
-          response.writeHead(200);
-          response.end(template); //추출한 쿼리스트링을 브라우저에 출력하는 코드
+            var template = templateHTML(title,list,data);
+
+            response.writeHead(200);
+            response.end(template); //추출한 쿼리스트링을 브라우저에 출력하는 코드
           });
 
       })
