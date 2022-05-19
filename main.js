@@ -13,9 +13,8 @@ function templateHTML(title,list,data) {
     <body>
     <h1><a href="/">WEB</a></h1>
     ${list}
-    <h2>${title}</h2>
-    <p>${data}
-    </p>
+    <a href="/create">create</a>
+    ${data}
     </body>
     </html>
       `;
@@ -51,7 +50,7 @@ var app = http.createServer(function(request,response){
           var title = 'Welcome';
           var data = 'Hello, NodeJS';
           var list = templateList(filelist);
-          var template = templateHTML(title,list,data);
+          var template = templateHTML(title,list,`<h2>${title}</h2>${data}`);
           response.writeHead(200);
           response.end(template); 
         })
@@ -62,7 +61,7 @@ var app = http.createServer(function(request,response){
 
           fs.readFile(`data/${queryData}`, 'utf8', function(err,data){
             var title = queryData;
-            var template = templateHTML(title,list,data);
+            var template = templateHTML(title,list,`<h2>${title}</h2>${data}`);
 
             response.writeHead(200);
             response.end(template); //추출한 쿼리스트링을 브라우저에 출력하는 코드
@@ -70,6 +69,24 @@ var app = http.createServer(function(request,response){
 
       })
       }
+    } else if(pathname === '/create') {
+      fs.readdir('./data', function(err, filelist) {
+        var title = 'WEB-create';
+        var list = templateList(filelist);
+        var template = templateHTML(title,list,`
+        <form action="http://localhost:3000/process_create" method="post">
+            <p><input type="text" name="title" placeholder="title"></p>
+            <p>
+              <textarea name="description" placeholder="description"></textarea>
+            </p>
+            <p>
+              <input type="submit">
+            </p>
+        </form>
+        `);
+        response.writeHead(200);
+        response.end(template); 
+      })
     } else {
       response.writeHead(404);
       response.end('Not Found');
