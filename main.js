@@ -3,34 +3,35 @@ var fs = require('fs');
 var qs = require('querystring');
 //var url = require('url');
 
-function templateHTML(title,list,data,control) {
-  return `
-      <!doctype html>
-    <html>
-    <head>
-    <title>WEB1 - ${title}</title>
-    <meta charset="utf-8">
-    </head>
-    <body>
-    <h1><a href="/">WEB</a></h1>
-    ${list}
-    ${control}
-    ${data}
-    </body>
-    </html>
-      `;
-}
-
-function templateList(filelist) {
-  var list = '<ul>';
-  var i = 0;
-  while(i < filelist.length) {
-    list = list + `<li><a href="/?id=${filelist[i]}">${filelist[i]}</a></li>`;
-    i = i+1;
+var template = {
+  html:function(title,list,data,control) {
+    return `
+        <!doctype html>
+      <html>
+      <head>
+      <title>WEB1 - ${title}</title>
+      <meta charset="utf-8">
+      </head>
+      <body>
+      <h1><a href="/">WEB</a></h1>
+      ${list}
+      ${control}
+      ${data}
+      </body>
+      </html>
+        `;
+  },
+  list:function(filelist) {
+    var list = '<ul>';
+    var i = 0;
+    while(i < filelist.length) {
+      list = list + `<li><a href="/?id=${filelist[i]}">${filelist[i]}</a></li>`;
+      i = i+1;
+    }
+    var list = list + '</ul>';
+  
+    return list;
   }
-  var list = list + '</ul>';
-
-  return list;
 }
 
 var app = http.createServer(function(request,response){
@@ -50,19 +51,19 @@ var app = http.createServer(function(request,response){
         fs.readdir('./data', function(err, filelist) {
           var title = 'Welcome';
           var data = 'Hello, NodeJS';
-          var list = templateList(filelist);
-          var template = templateHTML(title,list,`<h2>${title}</h2>${data}`, `<a href="/create">create</a>`);
+          var list = template.list(filelist);
+          var html = template.html(title,list,`<h2>${title}</h2>${data}`, `<a href="/create">create</a>`);
           response.writeHead(200);
-          response.end(template); 
+          response.end(html); 
         })
           
       } else {
         fs.readdir('./data', function(err, filelist) {
-          var list = templateList(filelist);
+          var list = template.list(filelist);
 
           fs.readFile(`data/${queryData}`, 'utf8', function(err,data){
             var title = queryData;
-            var template = templateHTML(title,list,`<h2>${title}</h2>${data}`, 
+            var html = template.html(title,list,`<h2>${title}</h2>${data}`, 
             `<a href="/create">create</a> 
              <a href="/update?id=${title}">update</a>
              <form action="delete_process" method="post" onsubmit="return confirm('do you want to delete this file?')">
@@ -72,7 +73,7 @@ var app = http.createServer(function(request,response){
              `);
 
             response.writeHead(200);
-            response.end(template); //추출한 쿼리스트링을 브라우저에 출력하는 코드
+            response.end(html); //추출한 쿼리스트링을 브라우저에 출력하는 코드
           });
 
       })
@@ -80,8 +81,8 @@ var app = http.createServer(function(request,response){
     } else if(pathname === '/create') {
       fs.readdir('./data', function(err, filelist) {
         var title = 'WEB-create';
-        var list = templateList(filelist);
-        var template = templateHTML(title,list,`
+        var list = template.list(filelist);
+        var html = template.html(title,list,`
         <form action="/create_process" method="post">
             <p><input type="text" name="title" placeholder="title"></p>
             <p>
@@ -93,7 +94,7 @@ var app = http.createServer(function(request,response){
         </form>
         `, ``);
         response.writeHead(200);
-        response.end(template); 
+        response.end(html); 
       })
     } else if(pathname === '/create_process') {
       var body = '';
@@ -113,11 +114,11 @@ var app = http.createServer(function(request,response){
       })
     } else if(pathname=== '/update') {
       fs.readdir('./data', function(err, filelist) {
-        var list = templateList(filelist);
+        var list = template.list(filelist);
 
         fs.readFile(`data/${queryData}`, 'utf8', function(err,data){
           var title = queryData;
-          var template = templateHTML(title,list,`
+          var html = template.html(title,list,`
           <form action="/update_process" method="post">
           <input type="hidden" name="id" value="${title}">
             <p><input type="text" name="title" placeholder="title" value="${title}"></p>
@@ -131,7 +132,7 @@ var app = http.createServer(function(request,response){
           `, `<a href="/create">create</a> <a href="/update?id=${title}">update</a>`);
 
           response.writeHead(200);
-          response.end(template); //추출한 쿼리스트링을 브라우저에 출력하는 코드
+          response.end(html); //추출한 쿼리스트링을 브라우저에 출력하는 코드
         });
 
     })
